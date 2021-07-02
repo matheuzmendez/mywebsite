@@ -1,11 +1,11 @@
 export default {
-  repository: 'https://github.com/shuding/nextra',
+  repository: '',
   titleSuffix: ' – Nextra',
   logo: (
     <>
-      <span className="mr-2 font-extrabold hidden md:inline">Nextra</span>
+      <span className="mr-2 font-extrabold hidden md:inline">Matheus Mendes</span>
       <span className="text-gray-600 font-normal hidden md:inline">
-        The Next.js Site Builder
+        Desenvolvedor Backend
       </span>
     </>
   ),
@@ -60,6 +60,6 @@ export default {
   prevLinks: true,
   nextLinks: true,
   footer: true,
-  footerEditOnGitHubLink: true,
-  footerText: <>MIT {new Date().getFullYear()} © Nextra.</>,
+  footerEditOnGitHubLink: false,
+  footerText: <> Copyright © {new Date().getFullYear()} by Matheus Mendes.</>,
 }
