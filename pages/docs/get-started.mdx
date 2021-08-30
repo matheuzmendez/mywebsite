@@ -1,78 +1,71 @@
-# Get Started
+# Já se perguntou como ocorre uma transação financeira na bolsa de valores?
 
-Create your own Nextra site and deploy to Vercel:
+O mercado financeiro é um ambiente de compra e venda, seja de ações, opções, fundos imobiliários, títulos, câmbio ou até mesmo mercadorias. Nessas negociações, existem diversos agentes, sendo alguns deles, várias instituições, tais instituições que facilitam o encontro entre pessoas e regulam e fiscalizam as transações.  Mas, já parou para se perguntar, como essas negociações funcionam por de baixo dos panos?
 
-[![](https://vercel.com/button)](https://vercel.com/import/git?s=https%3A%2F%2Fgithub.com%2Fshuding%2Fnextra&c=1)
+O intuito desse artigo é explicar brevemente sobre como ocorre as trocas de informações quando se compra e vende um ativo, seja esse ativo uma ação, um fundo imobiliário, opção ou qualquer outro ativo.  Mais especificamente, falaremos sobre um protocolo chamado FIX, sobre o que é esse protocolo, sobre sua origem e também o porque de ser um protocolo tão importante atualmente, além de falar um pouco sobre de como ele funciona na prática.
 
-Vercel will create the Nextra repository and deploy the site for you with just a few clicks.  
-Once done, every change in the repository will be deployed automatically.
+### O que é o protocolo FIX? 
 
----
+É um protocolo que revolucionou o ambiente de negociação e se provou ser fundamental para facilitar muitas negociações que vem surgindo desde as décadas passadas. O **Financial Information eXchange (FIX)** (do inglês, Troca de Informação Financeira) já se tornou oficialmente a forma de como o mundo faz operações financeiras, após se provar eficiente e transparente. O mesmo oferece benefícios significativos para empresas interessadas em explorar novas oportunidades de investimento, além de reduzir o custo de entrada no mercado com participantes capazes de se comunicar rapidamente tanto nacional quanto internacionalmente e também de reduzir significativamente os custos de troca.
 
-### Configurations
+### Missão do protocolo FIX
 
-1. Install Next.js and React: `yarn add next react react-dom`
+A especificação do protocolo foi criada em 1992 por Robert Bob Lamourex e Chris Morstatt com um objetivo: conectar e padronizar a comunicação entre o ecossistema global, gestores de ativos, bancos, corretoras, fornecedores e reguladores. O objetivo era fazer isso seguindo alguns princípios:
 
-2. Install Nextra and the docs theme: `yarn add nextra nextra-theme-docs`
+1. Criar e manter padrões abertos eficientes em todo o ecossistema, desde a pré-negociação até os dados de mercado e liquidação.
+2. Fornecer consultoria e aconselhamento a órgãos reguladores de forma transparente e imparcial.
+3. Buscar maneiras de melhorar o processo de negociação de ponta a ponta para o setor de serviços financeiros globais.
+4. Proporcionar aos membros um ambiente neutro e colaborativo para se reunirem por meio de conferências dirigidas aos membros e outros fóruns críticos para promover, apoiar e educar.
 
-3. Create the following Next.js config and theme config under the root directory:
+### Especificação Técnica
 
-```jsx
-// next.config.js
-const withNextra = require('nextra')('nextra-theme-docs', './theme.config.js')
-module.exports = withNextra()
-```
+O protocolo FIX na prática é formado por diversas tags, existindo várias e várias dessa, nesse artigo será exibido as tags que são consideradas as mais "relevantes" e seus respectivos significados:
 
-```jsx
-// theme.config.js
-export default {
-  repository: 'https://github.com/shuding/nextra', // project repo
-  docsRepository: 'https://github.com/shuding/nextra', // docs repo
-  branch: 'master', // branch of docs
-  path: '/', // path of docs
-  titleSuffix: ' – Nextra',
-  nextLinks: true,
-  prevLinks: true,
-  search: true,
-  customSearch: null, // customizable, you can use algolia for example
-  darkMode: true,
-  footer: true,
-  footerText: `MIT ${new Date().getFullYear()} © Shu Ding.`,
-  footerEditOnGitHubLink: true, // will link to the docs repo
-  logo: <>
-    <svg>...</svg>
-    <span>Next.js Static Site Generator</span>
-  </>,
-  head: <>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Nextra: the next docs builder" />
-    <meta name="og:title" content="Nextra: the next docs builder" />
-  </>
-}
-```
+`8 [BeginString]` : É a tag que identifica o início de uma nova mensagem e a versão do protocolo.
 
-4. Create `pages/_app.js` and include the theme stylesheet:
+Exemplo: `FIX.4.4`
 
-```jsx
-import 'nextra-theme-docs/style.css'
+`9 [BodyLength]`: É o comprimento de uma mensagem em bytes, é feito o cálculo contando o número de caracteres na mensagem (incluindo os delimitadores) após o campo BodyLength (9) até o campo CheckSum (10), tal campo (10) esse que possui o valor da soma dos bytes.
 
-export default function Nextra({ Component, pageProps }) {
-  return <Component {...pageProps} />
-}
-```
+Exemplo: ` 8=FIX.4.49=5535=034=249=SENDER52=20210802-18:58:48.74956=TARGET10=116`, o BodyLength é 72 devido ao número de caracteres.
 
-5. You are good to go! 
+`34 [MsgSeqNum]`: Essa tag é quem garante que todas mensagens vão ser recebidas na ordem correta em que elas aconteceram. O protocolo FIX requer que cada aplicação mantenha dois números de sequência por sessão: entrada e saída. Os números são independentes uns dos outros e a aplicação incrementa o número de sequência de saída e define a tag 34 igual a esse valor em cada mensagem de saída. Para mensagens de entrada, o aplicativo incrementa o número de sequência de entrada armazenado e verifica se ele corresponde ao valor da tag 34 da mensagem de entrada.
 
----
+Exemplo:  `8=FIX.4.49=5535=034=249=TARGET52=20210802-18:58:49.31656=SENDER10=107`  esse seria o "par" do MsgSeqNum apresentado no exemplo da tag 9 (BodyLength).
 
-import Callout from 'nextra-theme-docs/callout'
+`35 [MsgType]`: Essa tag define o tipo de mensagem com apenas algum caractere.
 
-<Callout>
-Any `.md` or `.mdx` file will turn into a doc page and be displayed in sidebar. You can also create a `meta.json` file to customize the page order and title.
+Exemplo:
 
-Check the source code: https://github.com/shuding/nextra for more information.
-</Callout>
+- `D [New Order]`: é o tipo de mensagem que é usado por instituições que desejam submeter eletronicamente títulos e ordens de uma corretora para execução.
+- `F [Order Cancel Request]`: essa mensagem solicita o cancelamento de toda ordem restante de um pedido existente.
+- `8 [Execution Report]`: essa mensagem é uma das mais importantes, usada para confirmar o recebimento de uma ordem, confirmar alterações de uma ordem existente, transmissão de informações do status do pedido, rejeições de ordens e mais algumas outras situações.
 
-<Callout>
-You can also use [`<style jsx>`](https://nextjs.org/docs/basic-features/built-in-css-support#css-in-js) to style elements inside `theme.config.js`.
-</Callout>
+`49 [SenderCompID]`: valor atribuído usado para identificar a corretora que envia a ordem.
+
+`56 [TargetCompID]`:  valor atribuído usado para identificar a empresa receptora.
+
+`52 [SendingTime]`: data e horário da transmissão da mensagem da ordem.
+
+`98 [EncryptodMethod]`: tag que define o método de criptografia do envio da mensagem.
+
+`10 [CheckSum]`: essa tag é sempre a última tag da mensagem, e para realizar o cálculo dela devemos somar os valores ASCII da mensagem e dividir pelo valor da tag BodyLength.
+
+### Conclusão 
+
+Com as informações que foram expostas nesse artigo foi possível entender um pouco mais sobre como funciona uma transação financeira na bolsa de valores, logo abaixo será mostrado de como será uma mensagem eletrônica seguindo o protocolo FIX na prática:
+
+`8=FIX.4.2|9=65|35=A|49=SERVER|56=CLIENT|34=177|52=20090107-18:15:16|98=0|108=30|10=062|`
+
+Para não ter que realizar todos os cálculos e não ter que dificultar muito para realizar a interpretação da mensagem, pode-se utilizar um decodificador de protocolo FIX que o link será deixado logo abaixo:
+
+[Decodificador FIX](https://drewnoakes.com/fix-decoder/#)
+
+Jogando nossa mensagem FIX no decodificador acima encontra-se a seguinte mensagem de uma forma melhor exposta visualmente e mais simples de entender. Contudo, espero que com tudo que foi mostrado acima você tenha conseguindo entender pelo menos um pouco de como funciona uma transação financeira no mundo da programação.
+
+### Referências
+
+1. [Financial Information eXchange](https://pt.wikipedia.org/wiki/Financial_Information_eXchange)
+2. [Fix Tranding Community](https://www.fixtrading.org/)
+3. [Fix 4.4 Dictionary TOC](https://btobits.com/fixopaedia/fixdic44/index.html)
+
